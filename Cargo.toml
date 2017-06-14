@@ -1,0 +1,13 @@
+[package]
+authors = ["Walther Chen <walther.chen@gmail.com>"]
+name = "slackit-cli"
+version = "0.1.0"
+
+[[bin]]
+name = "slackit"
+path = "src/main.rs"
+
+[dependencies]
+clap = "2.24.2"
+error-chain = "0.10.0"
+slack_api = "0.17.0"
