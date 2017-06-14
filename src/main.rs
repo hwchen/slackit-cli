@@ -19,7 +19,7 @@ mod error {
 
 use error::*;
 
-use clap::{Arg, ArgGroup, App};
+use clap::{Arg, ArgGroup, App, AppSettings};
 use slack_api::requests::Client;
 use slack_api::chat;
 use std::io;
@@ -53,6 +53,7 @@ fn run() -> Result<()> {
         .version(crate_version!())
         .author(crate_authors!())
         .about(crate_description!())
+        .setting(AppSettings::ArgRequiredElseHelp)
         .arg(Arg::with_name("get_token")
             .short("t")
             .long("token")
@@ -109,6 +110,9 @@ fn run() -> Result<()> {
         target.push_str(app_m.value_of("get_user").unwrap());
     };
 
+    // Optional configs
+    let sender_name = app_m.value_of("get_sender_name");
+
     // Set up client and send message
     let client = Client::new().unwrap();
 
@@ -121,10 +125,11 @@ fn run() -> Result<()> {
     let stdin = io::stdin();
     stdin.lock().read_to_string(&mut message)?;
 
+    let message = format_slack_message(&message);
     let mut m = chat::PostMessageRequest::default();
     m.channel = &target;
     m.text = &message;
-    m.username = app_m.value_of("get_sender_name");
+    m.username = sender_name;
 
     let _ = chat::post_message(
         &client,
@@ -137,7 +142,7 @@ fn run() -> Result<()> {
     Ok(())
 }
 
-fn format_slack_message() -> String {
+fn format_slack_message(s: &str) -> String {
     // need to format links and newlines.
-    "".to_owned()
+    format!("{}", s)
 }
