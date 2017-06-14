@@ -58,16 +58,19 @@ fn run() -> Result<()> {
             .short("t")
             .long("token")
             .takes_value(true)
+            .value_name("TOKEN")
             .help("set token here or env var SLACK_API_TOKEN"))
         .arg(Arg::with_name("get_channel")
             .short("c")
             .long("channel")
             .takes_value(true)
+            .value_name("CHANNEL")
             .help("channel to send to. Exclude #"))
         .arg(Arg::with_name("get_user")
             .short("u")
             .long("user")
             .takes_value(true)
+            .value_name("USER")
             .help("user to send to. Exclude @"))
         .group(ArgGroup::with_name("target")
             .args(&["get_channel", "get_user"])
@@ -76,20 +79,29 @@ fn run() -> Result<()> {
             .short("m")
             .long("message")
             .takes_value(true)
+            .value_name("MESSAGE")
             .help("text of message to send. stdin will be appended"))
-//        .arg(Arg::with_name("get_snippet")
-//             .short("s")
-//             .long("snippet")
-//             .help("text of snippet to send. stdin will be appended"))
-//        .arg(Arg::with_name("get_file_upload")
-//             .short("f")
-//             .long("file")
-//             .help("file to upload"))
+        .arg(Arg::with_name("get_snippet")
+             .short("s")
+             .long("snippet")
+             .help("text of snippet to send. stdin will be appended"))
+        .arg(Arg::with_name("get_file")
+             .short("f")
+             .long("file")
+             .help("file to upload"))
         .arg(Arg::with_name("get_sender_name")
             .short("n")
             .long("name")
             .takes_value(true)
+            .value_name("SENDER")
             .help("name to send as. Default bot"))
+        .after_help("NOTES:\n    \
+            - Target is required (either -c or -u). \n    \
+            - Payload is required, from flag or stdin. Default is stdin\n    \
+            - If any payload flag present, stdin will override (-f)\n    \
+                or will append (-m, -s).\n    \
+            - Only one payload flag can be present.
+        ")
         .get_matches();
 
     // config
