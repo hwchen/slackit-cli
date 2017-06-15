@@ -82,13 +82,17 @@ fn run() -> Result<()> {
             .value_name("MESSAGE")
             .help("text of message to send. stdin will be appended"))
         .arg(Arg::with_name("get_snippet")
-             .short("s")
-             .long("snippet")
-             .help("text of snippet to send. stdin will be appended"))
+            .short("s")
+            .long("snippet")
+            .takes_value(false)
+            .value_name("STDIN")
+            .help("text of snippet to send. stdin will be appended"))
         .arg(Arg::with_name("get_file")
-             .short("f")
-             .long("file")
-             .help("file to upload"))
+            .short("f")
+            .long("file")
+            .takes_value(true)
+            .value_name("FILEPATH")
+            .help("file to upload"))
         .arg(Arg::with_name("get_sender_name")
             .short("n")
             .long("name")
@@ -98,8 +102,8 @@ fn run() -> Result<()> {
         .after_help("NOTES:\n    \
             - Target is required (either -c or -u). \n    \
             - Payload is required, from flag or stdin. Default is stdin\n    \
-            - If any payload flag present, stdin will override (-f)\n    \
-                or will append (-m, -s).\n    \
+            - If payload flag -m or -f present, stdin will be overriden\n    \
+            - Payload flag -s only reads from stdin\n    \
             - Only one payload flag can be present.
         ")
         .get_matches();
@@ -128,14 +132,18 @@ fn run() -> Result<()> {
     // Set up client and send message
     let client = Client::new().unwrap();
 
-    // Message will always be sent, whether
-    // through -m or through stdin or both
+    // Message only sent if no flag, -m, or -s
     let mut message = app_m.value_of("get_message")
         .map(|s| s.to_owned())
         .unwrap_or("".to_owned());
 
-    let stdin = io::stdin();
-    stdin.lock().read_to_string(&mut message)?;
+    // -m or -f do not read from stdin. -s does
+    if !app_m.is_present("get_message") &&
+        !app_m.is_present("get_file")
+    {
+        let stdin = io::stdin();
+        stdin.lock().read_to_string(&mut message)?;
+    }
 
     let message = format_slack_message(&message);
     let mut m = chat::PostMessageRequest::default();
